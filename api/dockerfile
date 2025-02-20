@@ -1,0 +1,26 @@
+FROM node:18
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 프로젝트 파일 복사
+COPY package.json package-lock.json ./
+RUN npm install
+
+# 소스 코드 복사
+COPY . .
+
+# TLS 인증서 시스템 경로로 복사
+COPY tls/ca.crt /usr/local/share/ca-certificates/redis-ca.crt
+
+# 시스템 인증서 저장소에 추가
+RUN update-ca-certificates
+
+# 코드 빌드
+RUN npm run build
+
+# 포트 설정
+EXPOSE 3000
+
+# 서버 실행
+CMD ["npm", "run", "start"]

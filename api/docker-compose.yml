@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./tls:/tls  # TLS 인증서 마운트
+      - ./redis_data:/data  # Redis 데이터 영구 저장
+    command: >
+      redis-server --tls-port 6379 --port 0 
+      --tls-cert-file /tls/redis.crt
+      --tls-key-file /tls/redis.key
+      --tls-ca-cert-file /tls/ca.crt
+      --tls-dh-params-file /tls/redis.dh
+      --tls-auth-clients no
+      --appendonly yes
+    environment:
+      - REDIS_TLS=true
+
+  codepush:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: codepush
+    depends_on:
+      - redis
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_USE_TLS=true
+      - REDIS_TLS_CA_FILE=/tls/ca.crt
+      - REDIS_TLS_CERT_FILE=/tls/redis.crt
+      - REDIS_TLS_KEY_FILE=/tls/redis.key
+      - NODE_EXTRA_CA_CERTS=/tls/ca.crt  # 자체 서명된 인증서 강제 신뢰
+    volumes:
+      - ./tls:/tls
