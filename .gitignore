@@ -45,6 +45,9 @@ JsonStorage.json
 *.pem
 *.key
 *.cnf
+*.srl
+*.csr
+*.dh
 
 # Azurite local storage files
 __azurite_db_*
@@ -52,3 +55,5 @@ __blobstorage__
 __queuestorage__
 
 .idea
+
+api/redis_data
